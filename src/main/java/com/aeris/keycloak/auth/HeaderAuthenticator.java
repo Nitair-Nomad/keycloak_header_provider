@@ -1,13 +1,11 @@
 package com.aeris.keycloak.auth;
 
-import jakarta.ws.rs.core.MultivaluedMap;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.models.*;
 import org.keycloak.services.ServicesLogger;
 
-import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -31,10 +29,11 @@ public class HeaderAuthenticator implements Authenticator {
         }
 
         try {
-            certPem = certPem.replace("-----BEGIN CERTIFICATE-----", "")
-                             .replace("-----END CERTIFICATE-----", "")
-                             .replaceAll("\\s+", "");
-            byte[] certBytes = Base64.getDecoder().decode(certPem);
+            String sanitized = certPem
+                    .replace("-----BEGIN CERTIFICATE-----", "")
+                    .replace("-----END CERTIFICATE-----", "")
+                    .replaceAll("\s+", "");
+            byte[] certBytes = Base64.getDecoder().decode(sanitized);
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             X509Certificate cert = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certBytes));
 
@@ -44,10 +43,12 @@ public class HeaderAuthenticator implements Authenticator {
                     if (altName.size() < 2) continue;
                     Integer type = (Integer) altName.get(0);
                     Object value = altName.get(1);
-                    if (type == 0 && value instanceof String principalName) {
-			    var user = context.getSession().users()
-    				.searchForUserByUserAttributeStream(context.getRealm(), "principalName", principalName)
-    				.findFirst().orElse(null);
+                    if (type == 0 && value instanceof String) {
+                        String principalName = (String) value;
+                        UserModel user = context.getSession().users()
+                                .searchForUserByUserAttributeStream(context.getRealm(), "principalName", principalName)
+                                .findFirst().orElse(null);
+
                         if (user != null) {
                             context.setUser(user);
                             context.success();
