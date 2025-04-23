@@ -34,24 +34,11 @@ public class HeaderAuthenticatorFactory implements AuthenticatorFactory {
         return new HeaderAuthenticator();
     }
 
-    @Override
-    public void init(Config.Scope config) {}
-
-    @Override
-    public void postInit(KeycloakSessionFactory factory) {}
-
-    @Override
-    public void close() {}
-
-    @Override
-    public boolean isConfigurable() {
-        return false;
-    }
-
-    @Override
-    public boolean isUserSetupAllowed() {
-        return false;
-    }
+    @Override public void init(Config.Scope config) {}
+    @Override public void postInit(KeycloakSessionFactory factory) {}
+    @Override public void close() {}
+    @Override public boolean isConfigurable() { return false; }
+    @Override public boolean isUserSetupAllowed() { return false; }
 
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {

@@ -6,8 +6,6 @@
     <artifactId>header-authenticator</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>Keycloak Header Authenticator</name>
-    <description>Login using SSL client cert principalName</description>
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
