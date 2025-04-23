@@ -17,7 +17,7 @@ public class HeaderAuthenticatorFactory implements AuthenticatorFactory {
     @Override public String getId() { return ID; }
     @Override public String getDisplayType() { return "Header Authenticator (PrincipalName)"; }
     @Override public String getHelpText() {
-        return "Parses X.509 otherName SAN for principalName and authenticates.";
+        return "Parses X.509 otherName SAN for PrincipalName attribute and authenticates.";
     }
     @Override public Authenticator create(KeycloakSession session) {
         return new HeaderAuthenticator();
