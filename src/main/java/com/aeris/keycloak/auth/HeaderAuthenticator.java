@@ -1,5 +1,10 @@
 package com.aeris.keycloak.auth;
 
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.OtherName;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -20,67 +25,66 @@ public class HeaderAuthenticator implements Authenticator {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-        String certPem = context.getHttpRequest().getHttpHeaders().getHeaderString(HEADER_NAME);
-
+        String certPem = context.getHttpRequest().getHttpHeaders()
+                                .getHeaderString(HEADER_NAME);
         if (certPem == null || certPem.isEmpty()) {
-            logger.warnf("Header '%s' not found in request.", HEADER_NAME);
+            logger.debugf("Header '%s' not found.", HEADER_NAME);
             context.attempted();
             return;
         }
-
         try {
             String sanitized = certPem
-                    .replace("-----BEGIN CERTIFICATE-----", "")
-                    .replace("-----END CERTIFICATE-----", "")
-                    .replaceAll("\s+", "");
+                .replace("-----BEGIN CERTIFICATE-----", "")
+                .replace("-----END CERTIFICATE-----", "")
+                .replaceAll("\s+", "");
             byte[] certBytes = Base64.getDecoder().decode(sanitized);
-            CertificateFactory factory = CertificateFactory.getInstance("X.509");
-            X509Certificate cert = (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(certBytes));
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) cf
+                .generateCertificate(new ByteArrayInputStream(certBytes));
 
             Collection<List<?>> altNames = cert.getSubjectAlternativeNames();
             if (altNames != null) {
-                for (List<?> altName : altNames) {
-                    if (altName.size() < 2) continue;
-                    Integer type = (Integer) altName.get(0);
-                    Object value = altName.get(1);
-                    if (type == 0 && value instanceof String) {
-                        String principalName = (String) value;
-                        UserModel user = context.getSession().users()
-                                .searchForUserByUserAttributeStream(context.getRealm(), "principalName", principalName)
-                                .findFirst().orElse(null);
+                for (List<?> entry : altNames) {
+                    Integer type = (Integer) entry.get(0);
+                    Object value = entry.get(1);
+                    if (type == GeneralName.otherName && value instanceof byte[] derBytes) {
+                        ASN1Sequence seq = (ASN1Sequence) ASN1Primitive
+                                .fromByteArray(derBytes);
+                        OtherName other = OtherName.getInstance(seq);
+                        // other.getValue() holds the inner ASN1 encoded name
+                        ASN1String name = (ASN1String) other.getValue();
+                        String principalName = name.getString();
 
+                        logger.debugf("Extracted principalName: %s", principalName);
+                        UserModel user = context.getSession().users()
+                            .searchForUserByUserAttributeStream(
+                                context.getRealm(),
+                                "principalName",
+                                principalName
+                            )
+                            .findFirst().orElse(null);
                         if (user != null) {
                             context.setUser(user);
                             context.success();
                         } else {
-                            logger.warnf("No user found with principalName '%s'", principalName);
-                            context.failure(AuthenticationFlowError.UNKNOWN_USER);
+                            logger.warnf("No user for principalName '%s'", principalName);
+                            context.attempted();
                         }
                         return;
                     }
                 }
             }
-
-            logger.warn("No principalName found in certificate SAN");
+            logger.warn("No otherName SAN with principalName found.");
             context.attempted();
         } catch (Exception e) {
-            logger.error("Error processing client certificate", e);
+            logger.error("Error parsing client certificate", e);
             context.failure(AuthenticationFlowError.INTERNAL_ERROR);
         }
     }
 
-    @Override
-    public void action(AuthenticationFlowContext context) {}
-
-    @Override
-    public boolean requiresUser() { return false; }
-
-    @Override
-    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) { return true; }
-
-    @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {}
-
-    @Override
-    public void close() {}
+    @Override public void action(AuthenticationFlowContext context) {}
+    @Override public boolean requiresUser() { return false; }
+    @Override public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) { return true; }
+    @Override public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {}
+    @Override public void close() {}
 }
