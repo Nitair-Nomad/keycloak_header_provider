@@ -47,6 +47,7 @@
 
   <build>
     <plugins>
+      <!-- Compiler plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -56,6 +57,7 @@
           <target>21</target>
         </configuration>
       </plugin>
+      <!-- Correct Jar plugin with groupId -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
