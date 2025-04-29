@@ -8,12 +8,14 @@
   <version>1.0.0</version>
   <packaging>jar</packaging>
   <name>Keycloak Header Authenticator</name>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <keycloak.version>21.1.2</keycloak.version>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.keycloak</groupId>
@@ -42,8 +44,10 @@
       <version>3.4.3.Final</version>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
+      <!-- Compiler plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -51,6 +55,22 @@
         <configuration>
           <source>21</source>
           <target>21</target>
+        </configuration>
+      </plugin>
+
+      <!-- Jar plugin to exclude Maven metadata and disable Class-Path -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.2</version>
+        <configuration>
+          <excludes>
+            <exclude>META-INF/maven/**</exclude>
+          </excludes>
+          <archive>
+            <manifest>
+              <addClasspath>false</addClasspath>
+            </manifest>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

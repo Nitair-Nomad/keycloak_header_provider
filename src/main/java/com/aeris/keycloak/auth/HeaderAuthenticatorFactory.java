@@ -5,7 +5,6 @@ import org.keycloak.authentication.ConfigurableAuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,15 +18,13 @@ public class HeaderAuthenticatorFactory implements ConfigurableAuthenticatorFact
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
     static {
         ProviderConfigProperty p = new ProviderConfigProperty();
-        p.setName("header.name");
-        p.setLabel("Header Name");
+        p.setName("header.name"); p.setLabel("Header Name");
         p.setType(ProviderConfigProperty.STRING_TYPE);
         p.setHelpText("HTTP header name");
         p.setDefaultValue("X-User-Principal");
         configProperties.add(p);
         p = new ProviderConfigProperty();
-        p.setName("user.attribute");
-        p.setLabel("User Attribute");
+        p.setName("user.attribute"); p.setLabel("User Attribute");
         p.setType(ProviderConfigProperty.STRING_TYPE);
         p.setHelpText("Keycloak user attribute");
         p.setDefaultValue("PrincipalName");

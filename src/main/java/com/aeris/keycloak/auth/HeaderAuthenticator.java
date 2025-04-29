@@ -30,7 +30,6 @@ public class HeaderAuthenticator implements Authenticator {
             .getOrDefault("user.attribute", "PrincipalName");
         RealmModel realm = context.getRealm();
         KeycloakSession session = context.getSession();
-        // Use stream search to match user attribute exactly
         List<UserModel> matches = session.users().getUsersStream(realm)
             .filter(u -> principalName.equals(u.getFirstAttribute(userAttr)))
             .collect(Collectors.toList());
