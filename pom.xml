@@ -47,7 +47,6 @@
 
   <build>
     <plugins>
-      <!-- Compiler plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -57,20 +56,19 @@
           <target>21</target>
         </configuration>
       </plugin>
-
-      <!-- Jar plugin to exclude Maven metadata and disable Class-Path -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.2.2</version>
         <configuration>
-          <excludes>
-            <exclude>META-INF/maven/**</exclude>
-          </excludes>
           <archive>
             <manifest>
               <addClasspath>false</addClasspath>
             </manifest>
           </archive>
+          <excludes>
+            <exclude>META-INF/maven/**</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
